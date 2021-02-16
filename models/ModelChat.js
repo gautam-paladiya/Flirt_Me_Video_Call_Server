@@ -1,0 +1,31 @@
+const mongoose = require("mongoose");
+
+var userSchema = mongoose.Schema({
+  socketId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  peerId: {
+    type: String,
+  },
+  connectedTo: {
+    type: String,
+  },
+  userId: {
+    type: String,
+    unique: true,
+  },
+  isConnected: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  isAvailable: {
+    type: Boolean,
+    required: true,
+    default: true,
+  },
+});
+
+module.exports = mongoose.model("Chats", userSchema);

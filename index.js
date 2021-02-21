@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const { createServer } = require("http");
 const { Server: Socket } = require("socket.io");
@@ -10,12 +12,24 @@ const ModelChat = require("./models/ModelChat");
 const DEFAULT_PORT = 4000 | process.env.PORT;
 const users = {};
 
+console.log(
+  "process.env.SOCKET_CORS_PATH ",
+  process.env.NODE_ENV == "production"
+    ? process.env.SOCKET_CORS_PATH_PROD
+    : process.env.SOCKET_CORS_PATH_DEV
+);
 const app = express();
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
+  next();
+});
 const httpServer = createServer(app);
 const io = new Socket(httpServer, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"],
   },
 });
 

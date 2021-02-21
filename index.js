@@ -61,6 +61,8 @@ io.on("connection", (socket) => {
   const ChatUser = new ModelChat({
     socketId: socket.id,
     userId: userid,
+    isAvailable: false,
+    isConnected: false,
   });
 
   ModelChat.find({ socketId: socket.id }).then(
@@ -86,31 +88,41 @@ io.on("connection", (socket) => {
 
   // io.emit("allUsers", users);
 
-  socket.on("start", (res) => {
-    console.log(`res ${res}`);
-    ModelChat.findOneAndUpdate(
+  socket.on("start", async (res, callback) => {
+    console.log(`res ${JSON.stringify(res)}`);
+    await ModelChat.findOneAndUpdate(
       { socketId: socket.id },
-      { peerId: res.peerId },
+      { isAvailable: true }
+    );
+    ModelChat.findOneAndUpdate(
+      {
+        isConnected: false,
+        isAvailable: true,
+        socketId: { $ne: socket.id },
+      },
+      { isConnected: true, isAvailable: false },
       { new: true }
-    ).then((res) => {
-      if (res) {
-        ModelChat.findOne({
-          isConnected: false,
-          isAvailable: true,
-          socketId: { $ne: socket.id },
-        }).then(
-          (user) => {
-            console.log(`users ${user}`);
-            if (user) {
-              io.to(user.socketId).emit("requestCall", { peerId: res.peerId });
-            }
-          },
-          (err) => {
-            console.log(`start error ${err}`);
-          }
-        );
+    ).then(
+      (user) => {
+        console.log(`users ${user}`);
+        if (user && user.socketId !== socket.id) {
+          io.to(user.socketId).emit("requestCall", {
+            peerId: res.peerId,
+            socketId: socket.id,
+          });
+        } else {
+          callback({ userFound: false, message: "No user found", error: "" });
+        }
+      },
+      (err) => {
+        console.log(`start error ${err}`);
+        callback({
+          userFound: false,
+          message: "Something wrong try again later",
+          error: err,
+        });
       }
-    });
+    );
   });
 
   socket.on("userConnected", (arg) => {
@@ -136,6 +148,40 @@ io.on("connection", (socket) => {
       }
     });
     console.log(users);
+  });
+
+  socket.on("disconnected", (arg, callback) => {
+    console.log(`disconnected ${arg.isAvailable}`);
+    ModelChat.findOneAndUpdate(
+      { socketId: socket.id },
+      { isConnected: false, isAvailable: arg.isAvailable, connectedTo: " " },
+      { new: true }
+    ).then((res) => {
+      console.log(`disconnected ${res}`);
+      if (res) {
+        callback();
+      }
+    });
+  });
+
+  socket.on("online", () => {
+    ModelChat.findOneAndUpdate(
+      { socketId: socket.id },
+      { isAvailable: true },
+      { new: true }
+    ).then((res) => {
+      console.log(`connected ${res}`);
+    });
+  });
+
+  socket.on("offline", () => {
+    ModelChat.findOneAndUpdate(
+      { socketId: socket.id },
+      { isAvailable: false },
+      { new: true }
+    ).then((res) => {
+      console.log(`dis connected ${res}`);
+    });
   });
 
   socket.on("doCall", (arg) => {

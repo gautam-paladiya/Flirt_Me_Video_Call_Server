@@ -26,6 +26,12 @@ var userSchema = mongoose.Schema({
     required: true,
     default: true,
   },
+  country: {
+    type: String,
+  },
+  gender: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("Chats", userSchema);

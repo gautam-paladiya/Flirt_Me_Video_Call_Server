@@ -10,7 +10,7 @@ router.post("/register", (req, res) => {
 router.post("/fbRegister", async (req, res) => {
   console.log(`req ${JSON.stringify(req.body)}`);
 
-  UserModel.find({ email: req.body.email })
+  UserModel.findOne({ email: req.body.email })
     .exec()
     .then((users) => {
       console.log(`users ${users}`);
@@ -20,7 +20,10 @@ router.post("/fbRegister", async (req, res) => {
         newUser.save().then(
           (suc) => {
             console.log(`user save ${suc}`);
-            res.send({ msg: "User created successfully", data: { suc } });
+            res.send({
+              msg: "User created successfully",
+              data: suc,
+            });
           },
           (err) => {
             console.log(`user save err ${err}`);
@@ -29,7 +32,7 @@ router.post("/fbRegister", async (req, res) => {
         );
       } else {
         console.log("not else");
-        res.send({ msg: "User allready registered", data: { users } });
+        res.send({ msg: "User allready registered", data: users });
       }
     });
 });

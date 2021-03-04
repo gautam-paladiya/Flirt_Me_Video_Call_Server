@@ -139,6 +139,28 @@ io.on("connection", (socket) => {
     );
   });
 
+  socket.on("setCountry", (arg) => {
+    console.log(`arg ${JSON.stringify(arg)}`);
+    ModelChat.findOneAndUpdate(
+      { socketId: socket.id },
+      { country: arg.country },
+      { new: true }
+    ).then((res) => {
+      console.log(`setCountry ${res}`);
+    });
+  });
+
+  socket.on("setGender", (arg) => {
+    console.log(`arg ${JSON.stringify(arg)}`);
+    ModelChat.findOneAndUpdate(
+      { socketId: socket.id },
+      { gender: arg.gender },
+      { new: true }
+    ).then((res) => {
+      console.log(`setGender ${res}`);
+    });
+  });
+
   socket.on("userConnected", (arg) => {
     ModelChat.findOneAndUpdate(
       { socketId: socket.id },
@@ -146,6 +168,16 @@ io.on("connection", (socket) => {
       { new: true }
     ).then((res) => {
       console.log(`connected ${res}`);
+      io.to(res.socketId).emit("afterConnect", res);
+    });
+
+    ModelChat.findOneAndUpdate(
+      { socketId: arg.connectedTo },
+      { isConnected: true, isAvailable: false, connectedTo: socket.id },
+      { new: true }
+    ).then((res) => {
+      console.log(`connected ${res}`);
+      io.to(res.socketId).emit("afterConnect", res);
     });
   });
 

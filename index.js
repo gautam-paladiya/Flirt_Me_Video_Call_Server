@@ -58,11 +58,13 @@ app.get("/", (req, res) => {
 
 app.get("/getCountry", (req, res) => {
   const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-
-  axios.get(`http://www.geoplugin.net/json.gp?ip=${ip}`).then(({ data }) => {
+  var ips = ip.substring(0, ip.indexOf(",")).trim();
+  axios.get(`http://www.geoplugin.net/json.gp?ip=${ips}`).then(({ data }) => {
     console.log(`country ${JSON.stringify(data)}`);
     if (data.geoplugin_status == 200) {
       res.send(data);
+    } else {
+      res.send({ msg: "No Country matching" });
     }
   });
 });
@@ -81,7 +83,12 @@ io.on("connection", (socket) => {
   // if (!users[socket.id]) {
   //   users[socket.id] = userid;
   // }
-  console.log(`socket id ${socket.id}`);
+  console.log(`socket id ${socket.request.connection.remoteAddress}`);
+  console.log(
+    `socket name ${JSON.stringify(socket.request.connection._peername)}`
+  );
+  const address = socket.handshake.headers["x-forwarded-for"];
+  console.log(address);
 
   const ChatUser = new ModelChat({
     socketId: socket.id,

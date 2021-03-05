@@ -1,5 +1,5 @@
 require("dotenv").config();
-
+const axios = require("axios");
 const express = require("express");
 const { createServer } = require("http");
 const { Server: Socket } = require("socket.io");
@@ -54,6 +54,17 @@ httpServer.listen(DEFAULT_PORT, () => {
 app.get("/", (req, res) => {
   console.log(`${JSON.stringify(req.query)}`);
   res.send(req);
+});
+
+app.get("/getCountry", (req, res) => {
+  const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+  axios.get(`http://www.geoplugin.net/json.gp?ip=${ip}`).then(({ data }) => {
+    console.log(`country ${JSON.stringify(data)}`);
+    if (data.geoplugin_status == 200) {
+      res.send(data);
+    }
+  });
 });
 
 app.use("/auth", require("./routes/auth"));

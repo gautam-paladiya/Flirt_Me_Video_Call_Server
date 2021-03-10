@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,7 +21,7 @@ jobs:
           instance-ids: ${{ secrets.INSTANCE_ID  }}
 
           working-directory: /home/ubuntu
-          command: cd Flirt_Me_Video_Call_Server && sudo git pull && sudo npm install
+          command: cd Flirt_Me_Video_Call_Server && sudo su && git pull && npm install && pm2 restart index
 
       - name: Get the outputs
         run: echo "The Command id is ${{ steps.ssm.outputs.command-id }}"

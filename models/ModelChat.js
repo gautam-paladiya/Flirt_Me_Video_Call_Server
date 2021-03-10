@@ -32,6 +32,8 @@ var userSchema = mongoose.Schema({
   gender: {
     type: String,
   },
-});
+},{
+    timestamps: true,
+  });
 
 module.exports = mongoose.model("Chats", userSchema);

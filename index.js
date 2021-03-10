@@ -12,12 +12,6 @@ const ModelChat = require("./models/ModelChat");
 const DEFAULT_PORT = 4000 | process.env.PORT;
 const users = {};
 
-console.log(
-  "process.env.SOCKET_CORS_PATH ",
-  process.env.NODE_ENV == "production"
-    ? process.env.SOCKET_CORS_PATH_PROD
-    : process.env.SOCKET_CORS_PATH_DEV
-);
 const app = express();
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -37,15 +31,11 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-mongoose.connect(
-  "mongodb+srv://gautam:gavtam@cluster0.emjg5.mongodb.net/flirtme?retryWrites=true&w=majority",
-  { useFindAndModify: false },
-  (err) => {
-    if (err) {
-      consolel.log(`mongoose connect error ${err}`);
-    }
+mongoose.connect(process.env.MONGO_URL, { useFindAndModify: false }, (err) => {
+  if (err) {
+    consolel.log(`mongoose connect error ${err}`);
   }
-);
+});
 
 httpServer.listen(DEFAULT_PORT, () => {
   console.log(`server running on ${DEFAULT_PORT}`);

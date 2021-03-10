@@ -1,6 +1,6 @@
 require("dotenv").config();
 const axios = require("axios");
-const express = require("express");
+const app = require("express")();
 const { createServer } = require("http");
 const { Server: Socket } = require("socket.io");
 const username = require("username-generator");
@@ -8,11 +8,12 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const ModelChat = require("./models/ModelChat");
+const { ExpressPeerServer } = require("peer");
 
 const DEFAULT_PORT = 4000 | process.env.PORT;
-const users = {};
 
-const app = express();
+app.enable("trust proxy");
+
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
@@ -20,12 +21,20 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
   next();
 });
+
 const httpServer = createServer(app);
+
 const io = new Socket(httpServer, {
   cors: {
     origin: "*",
   },
 });
+
+// const peerServer = ExpressPeerServer(httpServer, {
+//   path: "/myapp",
+// });
+
+// app.use(peerServer);
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -201,7 +210,6 @@ io.on("connection", (socket) => {
         console.log(` disconnect response ${res}`);
       }
     });
-    console.log(users);
   });
 
   socket.on("disconnected", (arg, callback) => {
@@ -243,3 +251,5 @@ io.on("connection", (socket) => {
     io.to(arg.to).emit("requestCall", arg);
   });
 });
+
+// io.listen(5000);
